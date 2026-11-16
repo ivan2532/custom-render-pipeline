@@ -4,9 +4,9 @@ using UnityEngine.Rendering;
 
 namespace CustomRP.Runtime
 {
-    public class CameraRenderer
+    public partial class CameraRenderer
     {
-        private static ShaderTagId _unlitShaderTagId = new("SRPDefaultUnlit");
+        private static readonly ShaderTagId UnlitShaderTagId = new("SRPDefaultUnlit");
 
         private const string BufferName = "RenderCamera";
 
@@ -24,6 +24,8 @@ namespace CustomRP.Runtime
             Setup();
             Cull();
             DrawVisibleGeometry();
+            DrawUnsupportedShaders();
+            DrawGizmos();
             Submit();
         }
 
@@ -74,7 +76,7 @@ namespace CustomRP.Runtime
             {
                 criteria = SortingCriteria.CommonOpaque,
             };
-            DrawingSettings drawingSettings = new(_unlitShaderTagId, sortingSettings);
+            DrawingSettings drawingSettings = new(UnlitShaderTagId, sortingSettings);
             FilteringSettings filteringSettings = new(RenderQueueRange.opaque);
 
             _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
@@ -86,7 +88,7 @@ namespace CustomRP.Runtime
             {
                 criteria = SortingCriteria.CommonTransparent,
             };
-            DrawingSettings drawingSettings = new(_unlitShaderTagId, sortingSettings);
+            DrawingSettings drawingSettings = new(UnlitShaderTagId, sortingSettings);
             FilteringSettings filteringSettings = new(RenderQueueRange.transparent);
 
             _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
