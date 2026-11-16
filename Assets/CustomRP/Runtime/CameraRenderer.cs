@@ -22,6 +22,7 @@ namespace CustomRP.Runtime
             _buffer = new CommandBuffer { name = BufferName };
 
             Setup();
+            PrepareForSceneView();
             Cull();
             DrawVisibleGeometry();
             DrawUnsupportedShaders();

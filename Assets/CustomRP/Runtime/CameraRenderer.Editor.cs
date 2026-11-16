@@ -10,6 +10,8 @@ namespace CustomRP.Runtime
 
         private partial void DrawUnsupportedShaders();
 
+        private partial void PrepareForSceneView();
+
 #if UNITY_EDITOR
         private static readonly ShaderTagId[] LegacyShaderTagIds =
         {
@@ -57,6 +59,14 @@ namespace CustomRP.Runtime
             FilteringSettings filteringSettings = FilteringSettings.defaultValue;
 
             _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
+        }
+
+        private partial void PrepareForSceneView()
+        {
+            if (_camera.cameraType == CameraType.SceneView)
+            {
+                ScriptableRenderContext.EmitWorldGeometryForSceneView(_camera);
+            }
         }
 #endif
     }
