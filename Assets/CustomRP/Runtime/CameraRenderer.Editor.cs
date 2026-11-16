@@ -1,16 +1,19 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
 namespace CustomRP.Runtime
 {
     public partial class CameraRenderer
     {
-        private partial void DrawGizmos();
+        private partial void PrepareBuffer();
+
+        private partial void PrepareForSceneView();
 
         private partial void DrawUnsupportedShaders();
 
-        private partial void PrepareForSceneView();
+        private partial void DrawGizmos();
 
 #if UNITY_EDITOR
         private static readonly ShaderTagId[] LegacyShaderTagIds =
@@ -25,15 +28,21 @@ namespace CustomRP.Runtime
 
         private static Material _errorMaterial;
 
-        private partial void DrawGizmos()
-        {
-            if (!Handles.ShouldRenderGizmos())
-            {
-                return;
-            }
+        private string SampleName { get; set; }
 
-            _context.DrawGizmos(_camera, GizmoSubset.PreImageEffects);
-            _context.DrawGizmos(_camera, GizmoSubset.PostImageEffects);
+        private partial void PrepareBuffer()
+        {
+            Profiler.BeginSample("Editor Only");
+            _buffer.name = SampleName = _camera.name;
+            Profiler.EndSample();
+        }
+
+        private partial void PrepareForSceneView()
+        {
+            if (_camera.cameraType == CameraType.SceneView)
+            {
+                ScriptableRenderContext.EmitWorldGeometryForSceneView(_camera);
+            }
         }
 
         private partial void DrawUnsupportedShaders()
@@ -61,13 +70,18 @@ namespace CustomRP.Runtime
             _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
         }
 
-        private partial void PrepareForSceneView()
+        private partial void DrawGizmos()
         {
-            if (_camera.cameraType == CameraType.SceneView)
+            if (!Handles.ShouldRenderGizmos())
             {
-                ScriptableRenderContext.EmitWorldGeometryForSceneView(_camera);
+                return;
             }
+
+            _context.DrawGizmos(_camera, GizmoSubset.PreImageEffects);
+            _context.DrawGizmos(_camera, GizmoSubset.PostImageEffects);
         }
+#else
+        private const string SampleName = BufferName;
 #endif
     }
 }

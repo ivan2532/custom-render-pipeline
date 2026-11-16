@@ -21,22 +21,14 @@ namespace CustomRP.Runtime
             _camera = camera;
             _buffer = new CommandBuffer { name = BufferName };
 
-            Setup();
+            PrepareBuffer();
             PrepareForSceneView();
             Cull();
+            Setup();
             DrawVisibleGeometry();
             DrawUnsupportedShaders();
             DrawGizmos();
             Submit();
-        }
-
-        private void Setup()
-        {
-            _context.SetupCameraProperties(_camera);
-
-            _buffer.ClearRenderTarget(true, true, Color.clear);
-            _buffer.BeginSample(BufferName);
-            ExecuteBuffer();
         }
 
         private void Cull()
@@ -51,6 +43,22 @@ namespace CustomRP.Runtime
             _cullingResults = _context.Cull(ref cullingParameters);
         }
 
+        private void Setup()
+        {
+            _context.SetupCameraProperties(_camera);
+
+            CameraClearFlags clearFlags = _camera.clearFlags;
+            _buffer.ClearRenderTarget(
+                clearFlags <= CameraClearFlags.Depth,
+                clearFlags <= CameraClearFlags.Color,
+                clearFlags == CameraClearFlags.Color ? _camera.backgroundColor.linear : Color.clear
+            );
+
+            _buffer.BeginSample(SampleName);
+
+            ExecuteBuffer();
+        }
+
         private void DrawVisibleGeometry()
         {
             DrawOpaqueGeometry();
@@ -60,7 +68,7 @@ namespace CustomRP.Runtime
 
         private void Submit()
         {
-            _buffer.EndSample(BufferName);
+            _buffer.EndSample(SampleName);
             ExecuteBuffer();
             _context.Submit();
         }
